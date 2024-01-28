@@ -1,0 +1,88 @@
+site_name: Uncertainty Quantification utilities
+site_url: https://eckelsjd.github.io/uqtils/
+site_author: Joshua Eckels
+repo_name: eckelsjd/uqtils
+repo_url: https://github.com/eckelsjd/uqtils.git
+copyright: Copyright &copy 2024 Joshua Eckels
+
+theme:
+  name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  palette:
+    primary: blue grey  # https://squidfunk.github.io/mkdocs-material/setup/changing-the-colors/
+    accent: indigo
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - navigation.footer
+    - navigation.instant
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+
+plugins:
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: sphinx
+            docstring_section_style: spacy
+            merge_init_into_class: true
+            filters: ["!^_"]
+            show_symbol_type_heading: true  # not available to public right now
+            group_by_category: true
+
+nav:
+  - Home:
+      - Getting started: README.md
+      - Tutorials: tutorials.md
+      - How-to Guides: how-to-guides.md
+      - Contributing: CONTRIBUTING.md
+  - API Reference:
+      - Sampling: reference/mcmc.md
+      - Gradients: reference/grad.md
+      - Plotting: reference/plots.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/eckelsjd
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/uqtils/
+
+extra_javascript:
+  - javascripts/mathjax.js  # For displaying latex equations with $$ notation
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+#extra_css:
+#  - css/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      dedent_subsections: true
+      base_path: ['.', './src']
