@@ -8,5 +8,5 @@ from .grad import *
 from .mcmc import *
 from .plots import *
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [Array] + grad.__all__ + mcmc.__all__ + plots.__all__

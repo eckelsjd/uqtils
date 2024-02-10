@@ -21,7 +21,7 @@ __all__ = ['normal_pdf', 'normal_sample', 'is_positive_definite', 'nearest_posit
            'autocorrelation']
 
 
-def normal_sample(mean: Array, cov: Array, size: tuple | int = ()) -> np.ndarray:
+def normal_sample(mean: Array, cov: Array, size: tuple | int = (), sqrt=False) -> np.ndarray:
     """Generic batch sample multivariate normal distributions (pretty much however you want).
 
     !!! Note
@@ -32,18 +32,20 @@ def normal_sample(mean: Array, cov: Array, size: tuple | int = ()) -> np.ndarray
         and covariances, etc., just get creative)
 
     :param mean: `(..., dim)`, expected values, where `dim` is the random variable dimension
-    :param cov: `(..., dim, dim)`, covariance matrices
+    :param cov: `(..., dim, dim)`, covariance matrices (or the sqrt(cov) if `sqrt=True`)
     :param size: shape of additional samples
+    :param sqrt: whether `cov` was passed in already as the `sqrt(cov)` via cholesky decomposition
     :returns samples: `(*size, ..., dim)`, samples from multivariate distributions
     """
     mean = np.atleast_1d(mean)
     cov = np.atleast_2d(cov)
+    sqrt_cov = cov if sqrt else np.linalg.cholesky(cov)
 
     if isinstance(size, int):
         size = (size, )
     shape = size + np.broadcast_shapes(mean.shape, cov.shape[:-1])
     x_normal = np.random.standard_normal((*shape, 1)).astype(mean.dtype)
-    samples = np.squeeze(np.linalg.cholesky(cov) @ x_normal, axis=-1) + mean
+    samples = np.squeeze(sqrt_cov @ x_normal, axis=-1) + mean
     return samples
 
 
@@ -115,16 +117,18 @@ def nearest_positive_definite(A):
     return A3
 
 
-def dram(logpdf, x0, cov0, niter, gamma=0.5, eps=1e-7, adapt_after=100, delayed=True, progress=True, filename=None):
+def dram(logpdf, x0, niter, cov0=None, gamma=0.5, eps=1e-6, adapt_after=100, adapt_interval=10,
+         delayed=True, progress=True, filename=None):
     """Delayed adaptive metropolis-hastings MCMC with a Gaussian proposal.
 
     :param logpdf: log PDF function of target distribution
     :param x0: `(nwalkers, ndim)` initial parameter samples, ignored if samples exist in `filename`
-    :param cov0: `(ndim, ndim)` the initial proposal covariance
+    :param cov0: `(ndim, ndim)` the initial proposal covariance, defaults to identity or `cov` value in filename
     :param niter: number of iterations
     :param gamma: scale factor for the covariance matrix for delayed rejection step
     :param eps: small constant for making sure covariance is well-conditioned
     :param adapt_after: the number of iterations before covariance adaptation begins (ignored if <=0)
+    :param adapt_interval: the number of iterations between each covariance adaptation (ignored if `adapt_after<=0`)
     :param delayed: whether to try to sample again after first rejection
     :param progress: whether to display progress of the sampler
     :param filename: if specified, an hdf5 file to save results to. If the file already has dram results, the new
@@ -132,13 +136,15 @@ def dram(logpdf, x0, cov0, niter, gamma=0.5, eps=1e-7, adapt_after=100, delayed=
     :returns: `samples, log_pdf, acceptance` - `(niter, nwalkers, ndim)` samples of the target distribution, the logpdf
               values at these locations, and the cumulative number of accepted samples per walker
     """
-    # Override x0 if filename already has samples
+    # Override x0, cov0 if filename already has samples
     try:
         if filename is not None:
             with h5py.File(filename, 'a') as fd:
                 group = fd.get('mcmc', None)
                 if group is not None:
                     x0 = group['chain'][-1, ...]
+                    if cov0 is None:
+                        cov0 = np.array(group['cov'])  # only override if cov0 is not passed in
                     niter += 1
     except Exception as e:
         warnings.warn(str(e))
@@ -146,8 +152,11 @@ def dram(logpdf, x0, cov0, niter, gamma=0.5, eps=1e-7, adapt_after=100, delayed=
     # Initialize
     x0 = np.atleast_2d(x0)
     nwalk, ndim = x0.shape
+    cov0 = np.eye(ndim) if cov0 is None else cov0
     sd = (2.4**2/ndim)
-    curr_cov = np.broadcast_to(cov0, (nwalk, ndim, ndim)).copy()
+    curr_cov = np.broadcast_to(cov0, (nwalk, ndim, ndim)).copy().astype(x0.dtype)
+    curr_chol = np.linalg.cholesky(curr_cov)
+    adapt_cov = curr_cov.copy()  # adaptive covariance
     curr_mean = x0
     curr_loc_logpdf = logpdf(x0)
     samples = np.empty((niter, nwalk, ndim), dtype=x0.dtype)
@@ -159,25 +168,23 @@ def dram(logpdf, x0, cov0, niter, gamma=0.5, eps=1e-7, adapt_after=100, delayed=
     def accept_first(curr_log, prop_log):
         with np.errstate(over='ignore'):
             # Overflow values go to -> infty, so they will always get accepted
-            ret = np.minimum(1, np.exp(prop_log - curr_log))
+            ret = np.minimum(1.0, np.exp(prop_log - curr_log))
         return ret
 
     # Main sample loop
     iterable = tqdm.tqdm(range(niter-1)) if progress else range(niter-1)
     for i in iterable:
-        # if not is_positive_definite(curr_cov):
-        #     print(f'Caught non-positive definite matrix! Fixing...')
-        #     curr_cov = nearest_positive_definite(curr_cov)
-
         # Propose sample
         x1 = samples[i, ...]
-        y1 = normal_sample(x1, curr_cov)      # (nwalkers, ndim)
+        y1 = normal_sample(x1, curr_chol, sqrt=True)    # (nwalkers, ndim)
         x1_log = curr_loc_logpdf
         y1_log = logpdf(y1)
 
         # Compute first acceptance
-        a1 = accept_first(x1_log, y1_log)           # (nwalkers,)
-        a1_idx = np.random.rand() < a1
+        with np.errstate(invalid='ignore'):
+            a1 = y1_log - x1_log                        # (nwalkers,)
+        a1_idx = a1 > 0
+        a1_idx |= np.log(np.random.rand(nwalk)) < a1
         samples[i + 1, a1_idx, :] = y1[a1_idx, :]
         samples[i + 1, ~a1_idx, :] = x1[~a1_idx, :]
         curr_loc_logpdf[a1_idx] = y1_log[a1_idx]
@@ -185,16 +192,17 @@ def dram(logpdf, x0, cov0, niter, gamma=0.5, eps=1e-7, adapt_after=100, delayed=
 
         # Second level proposal
         if delayed and np.any(~a1_idx):
-            y2 = normal_sample(x1[~a1_idx, :], curr_cov[~a1_idx, ...] * gamma)
+            y2 = normal_sample(x1[~a1_idx, :], curr_chol[~a1_idx, ...] * np.sqrt(gamma), sqrt=True)
             y2_log = logpdf(y2)
-            frac_1 = y2_log - x1_log[~a1_idx]
-            frac_2 = (normal_pdf(y1[~a1_idx, :], y2, curr_cov[~a1_idx, ...], logpdf=True) -
-                      normal_pdf(y1[~a1_idx, :], x1[~a1_idx, :], curr_cov[~a1_idx, ...], logpdf=True))
-            with np.errstate(divide='ignore'):
+            with (np.errstate(divide='ignore', invalid='ignore')):
                 # If a(y2, y1)=1, then log(1-a(y2,y1)) -> -infty and a2 -> 0
-                frac_3 = np.log(1 - accept_first(y2_log, y1_log[~a1_idx])) - np.log(1 - a1[~a1_idx])
-            a2 = np.minimum(1, np.exp(frac_1 + frac_2 + frac_3))
-            a2_idx = np.random.rand() < a2
+                frac_1 = y2_log - x1_log[~a1_idx]
+                frac_2 = (normal_pdf(y1[~a1_idx, :], y2, curr_cov[~a1_idx, ...], logpdf=True) -
+                          normal_pdf(y1[~a1_idx, :], x1[~a1_idx, :], curr_cov[~a1_idx, ...], logpdf=True))
+                frac_3 = np.log(1 - accept_first(y2_log, y1_log[~a1_idx])) - np.log(1 - np.minimum(1.0, np.exp(a1[~a1_idx])))
+                a2 = frac_1 + frac_2 + frac_3
+            a2_idx = a2 > 0
+            a2_idx |= np.log(np.random.rand(a2.shape[0])) < a2
 
             sample_a2_idx = np.where(~a1_idx)[0][a2_idx]  # Indices that were False the 1st time, then true the 2nd
             samples[i + 1, sample_a2_idx, :] = y2[a2_idx, :]
@@ -203,17 +211,22 @@ def dram(logpdf, x0, cov0, niter, gamma=0.5, eps=1e-7, adapt_after=100, delayed=
 
         log_pdf[i+1, ...] = curr_loc_logpdf
 
-        # Update the sample mean every iteration
+        # Update the sample mean and cov every iteration
         if adapt_after > 0:
+            k = i + 1
             last_mean = curr_mean.copy()
-            curr_mean = (1/(i+1)) * x1 + (i/(i+1))*last_mean
+            curr_mean = (1/(k+1)) * samples[k, ...] + (k/(k+1))*last_mean
+            mult = (np.eye(ndim) * eps + k * last_mean[..., np.newaxis] @ last_mean[..., np.newaxis, :] -
+                    (k + 1) * curr_mean[..., np.newaxis] @ curr_mean[..., np.newaxis, :] +
+                    samples[k, ..., np.newaxis] @ samples[k, ..., np.newaxis, :])
+            adapt_cov = ((k - 1) / k) * adapt_cov + (sd / k) * mult
 
-            if i >= adapt_after:
-                k = i
-                mult = (np.eye(ndim) * eps + k * last_mean[..., np.newaxis] @ last_mean[..., np.newaxis, :] -
-                        (k + 1) * curr_mean[..., np.newaxis] @ curr_mean[..., np.newaxis, :] +
-                        x1[..., np.newaxis] @ x1[..., np.newaxis, :])
-                curr_cov = ((k - 1) / k) * curr_cov + (sd / k) * mult
+            if k > adapt_after and k % adapt_interval == 0:
+                try:
+                    curr_chol[:] = np.linalg.cholesky(adapt_cov)
+                    curr_cov[:] = adapt_cov[:]
+                except np.linalg.LinAlgError as e:
+                    warnings.warn(f"Non-PSD matrix at k={k}. Ignoring...")
 
     try:
         if filename is not None:
@@ -226,9 +239,11 @@ def dram(logpdf, x0, cov0, niter, gamma=0.5, eps=1e-7, adapt_after=100, delayed=
                     del group['chain']
                     del group['log_pdf']
                     del group['accepted']
+                    del group['cov']
                 fd.create_dataset('mcmc/chain', data=samples)
                 fd.create_dataset('mcmc/log_pdf', data=log_pdf)
                 fd.create_dataset('mcmc/accepted', data=accepted)
+                fd.create_dataset('mcmc/cov', data=curr_cov)
     except Exception as e:
         warnings.warn(str(e))
 

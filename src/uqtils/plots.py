@@ -15,6 +15,7 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.ticker import StrMethodFormatter, AutoLocator, FuncFormatter
 
 from .uq_types import Array
+from .mcmc import normal_sample
 
 __all__ = ['ax_default', 'plot_slice', 'ndscatter']
 
@@ -153,7 +154,8 @@ def plot_slice(funs, bds: list[tuple], x0: Array = None, x_idx: list[int] = None
 
 
 def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str] = None, plot='scatter',
-              cmap='viridis', bins=20, z: np.ndarray = None, cb_label=None, cb_norm='linear', subplot_size=3):
+              cmap='viridis', bins=20, z: np.ndarray = None, cb_label=None, cb_norm='linear', subplot_size=3,
+              cov_overlay=None):
     """Triangle scatter plots of n-dimensional samples.
 
     !!! Warning
@@ -169,6 +171,7 @@ def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str
     :param cb_label: label for color bar (if `z` is provided)
     :param cb_norm: `str` or `plt.colors.Normalize`, normalization method for plotting `z` on scatter plot
     :param subplot_size: size in inches of a single 2d marginal subplot
+    :param cov_overlay: `(ndim, ndim)` a covariance matrix to overlay as a Gaussian kde over the samples
     :returns fig, axs: the `plt` Figure and Axes objects, (returns an additional `cb_fig, cb_ax` if `z` is specified)
     """
     N, dim = samples.shape
@@ -220,6 +223,9 @@ def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str
                 formatter = StrMethodFormatter(tick_fmts[i]) if tick_fmts is not None else default_ticks
                 ax.yaxis.set_major_formatter(formatter)
 
+    if cov_overlay is not None:
+        x_overlay = normal_sample(np.mean(samples, axis=0), cov_overlay, 5000)
+
     # Plot marginals
     for i in range(dim):
         for j in range(dim):
@@ -228,12 +234,17 @@ def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str
                 c = plt.get_cmap(cmap)(0)
                 if plot == 'kde':
                     kernel = st.gaussian_kde(samples[:, i])
-                    x = np.linspace(x_min[i], x_max[i], 1000)
+                    x = np.linspace(x_min[i], x_max[i], 500)
                     ax.fill_between(x, y1=kernel(x), y2=0, lw=0, alpha=0.3, facecolor=c)
                     ax.plot(x, kernel(x), ls='-', c=c, lw=1.5)
                 else:
                     ax.hist(samples[:, i], edgecolor='black', color=c, density=True, alpha=0.5,
-                            linewidth=1.2, bins='auto', histtype='step')
+                            linewidth=1.2, bins=bins)
+                if cov_overlay is not None:
+                    kernel = st.gaussian_kde(x_overlay[:, i])
+                    x = np.linspace(x_min[i], x_max[i], 500)
+                    ax.fill_between(x, y1=kernel(x), y2=0, lw=0, alpha=0.5, facecolor=[0.5, 0.5, 0.5])
+                    ax.plot(x, kernel(x), ls='-', c='k', lw=1.5, alpha=0.5)
             if j < i:                       # 2d marginals (lower triangle)
                 ax.set_xlim([x_min[j], x_max[j]])
                 ax.set_ylim([x_min[i], x_max[i]])
@@ -243,13 +254,21 @@ def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str
                     ax.hist2d(samples[:, j], samples[:, i], bins=bins, density=True, cmap=cmap)
                 elif plot == 'kde':
                     kernel = st.gaussian_kde(samples[:, [j, i]].T)
-                    xg, yg = np.meshgrid(np.linspace(x_min[j], x_max[j], 60), np.linspace(x_min[i], x_max[i], 60))
+                    xg, yg = np.meshgrid(np.linspace(x_min[j], x_max[j], 40), np.linspace(x_min[i], x_max[i], 40))
                     x = np.vstack([xg.ravel(), yg.ravel()])
                     zg = np.reshape(kernel(x), xg.shape)
-                    ax.contourf(xg, yg, zg, 5, cmap=cmap, alpha=0.9)
-                    ax.contour(xg, yg, zg, 5, colors='k', linewidths=1.5)
+                    ax.contourf(xg, yg, zg, 4, cmap=cmap, alpha=0.9)
+                    ax.contour(xg, yg, zg, 4, colors='k', linewidths=1.5)
                 else:
                     raise NotImplementedError('This plot type is not known. plot=["hist", "kde", "scatter"]')
+
+                if cov_overlay is not None:
+                    kernel = st.gaussian_kde(x_overlay[:, [j, i]].T)
+                    xg, yg = np.meshgrid(np.linspace(x_min[j], x_max[j], 40), np.linspace(x_min[i], x_max[i], 40))
+                    x = np.vstack([xg.ravel(), yg.ravel()])
+                    zg = np.reshape(kernel(x), xg.shape)
+                    ax.contourf(xg, yg, zg, 4, cmap='Greys', alpha=0.4)
+                    ax.contour(xg, yg, zg, 4, colors='k', linewidths=1.5, alpha=0.6)
 
     fig.set_size_inches(subplot_size * dim, subplot_size * dim)
     fig.tight_layout()
