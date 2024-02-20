@@ -6,6 +6,8 @@ Includes
 - `plot_slice` - Plots a grid of 1d slices of a multivariate function
 - `ndscatter` - Plots a grid of 1d and 2d marginals in a "corner plot" for n-dimensional data
 """
+from typing import Literal
+
 import numpy as np
 import scipy.stats as st
 import matplotlib.pyplot as plt
@@ -34,10 +36,9 @@ def ax_default(ax: plt.Axes, xlabel='', ylabel='', legend=False, cmap='tab10'):
     plt.rc('ytick', labelsize='small')
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.tick_params(axis='x', direction='in')
-    ax.tick_params(axis='y', direction='in')
+    ax.tick_params(axis='both', which='both', direction='in')
     if legend:
-        leg = ax.legend(fancybox=True)
+        leg = ax.legend(fancybox=True, facecolor='white', framealpha=1)
         frame = leg.get_frame()
         frame.set_edgecolor('k')
 
@@ -153,9 +154,9 @@ def plot_slice(funs, bds: list[tuple], x0: Array = None, x_idx: list[int] = None
     return fig, axs
 
 
-def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str] = None, plot='scatter',
-              cmap='viridis', bins=20, z: np.ndarray = None, cb_label=None, cb_norm='linear', subplot_size=3,
-              cov_overlay=None):
+def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str] = None,
+              plot: Literal['scatter', 'kde', 'hist'] = 'scatter', cmap='viridis', bins=20, z: np.ndarray = None,
+              cb_label=None, cb_norm='linear', subplot_size=3, cov_overlay=None):
     """Triangle scatter plots of n-dimensional samples.
 
     !!! Warning
@@ -254,11 +255,13 @@ def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str
                     ax.hist2d(samples[:, j], samples[:, i], bins=bins, density=True, cmap=cmap)
                 elif plot == 'kde':
                     kernel = st.gaussian_kde(samples[:, [j, i]].T)
-                    xg, yg = np.meshgrid(np.linspace(x_min[j], x_max[j], 40), np.linspace(x_min[i], x_max[i], 40))
+                    xg, yg = np.meshgrid(np.linspace(x_min[j], x_max[j], 50), np.linspace(x_min[i], x_max[i], 50))
                     x = np.vstack([xg.ravel(), yg.ravel()])
                     zg = np.reshape(kernel(x), xg.shape)
-                    ax.contourf(xg, yg, zg, 4, cmap=cmap, alpha=0.9)
-                    ax.contour(xg, yg, zg, 4, colors='k', linewidths=1.5)
+                    cs = ax.contourf(xg, yg, zg, 5, cmap=cmap, alpha=0.9, extend='both')
+                    cs.cmap.set_under('white')
+                    cs.changed()
+                    ax.contour(xg, yg, zg, 5, colors=[(0.5, 0.5, 0.5)], linewidths=1.2)
                 else:
                     raise NotImplementedError('This plot type is not known. plot=["hist", "kde", "scatter"]')
 

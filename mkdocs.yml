@@ -53,6 +53,7 @@ nav:
       - Sampling: reference/mcmc.md
       - Gradients: reference/grad.md
       - Plotting: reference/plots.md
+      - Sobol analysis: reference/sobol.md
 
 extra:
   social:
