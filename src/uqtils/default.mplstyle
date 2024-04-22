@@ -1,0 +1,28 @@
+font.size : 18
+font.family : STIXGeneral
+mathtext.fontset : stix
+text.usetex : True
+axes.labelsize : 18
+xtick.labelsize : 15
+ytick.labelsize : 15
+legend.fontsize : 15
+axes.grid : True
+xtick.major.size : 6
+xtick.major.width : 1
+xtick.major.pad: 5
+xtick.direction : in
+xtick.minor.size : 3
+xtick.minor.width : 0.8
+xtick.minor.visible : True
+ytick.major.size : 6
+ytick.major.width : 1
+ytick.major.pad: 5
+ytick.direction :  in
+ytick.minor.size : 3
+ytick.minor.width : 0.8
+ytick.minor.visible : True
+legend.framealpha : 1
+legend.facecolor : white
+legend.fancybox : true
+legend.loc : best
+legend.edgecolor: k

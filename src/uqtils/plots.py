@@ -22,41 +22,29 @@ from .mcmc import normal_sample
 __all__ = ['ax_default', 'plot_slice', 'ndscatter']
 
 
-def ax_default(ax: plt.Axes, xlabel='', ylabel='', legend=None, rc=None, cmap='tab10'):
+def ax_default(ax: plt.Axes, xlabel='', ylabel='', legend=None, cmap='tab10'):
     """Nice default plt formatting for plotting X-Y data.
 
     :param ax: the axes to apply these settings to
     :param xlabel: the xlabel to set for `ax`
     :param ylabel: the ylabel to set for `ax`
-    :param rc: extra matplotlib rc configurations that can be specified in a dict (optional)
     :param legend: will display a legend if bool(legend) is truthy, can pass a dict of legend kwargs here (optional)
     :param cmap: colormap to use for cycling
     """
-    sf, lf = 13, 16  # font sizes
-    default_rc = {'font.size': lf, 'font.family': 'sans-serif', 'axes.labelsize': lf, 'xtick.labelsize': sf,
-                  'ytick.labelsize': sf, 'legend.fontsize': sf, 'axes.grid': True, 'axes.prop_cycle': _get_cycle(cmap),
-                  'xtick.major.size': 6, 'xtick.major.width': 1, 'xtick.major.direction': 'in',
-                  'xtick.minor.size': 3, 'xtick.minor.width': 0.8, 'xtick.minor.direction': 'in', 'xtick.minor.visible': True,
-                  'ytick.major.size': 6, 'ytick.major.width': 1, 'ytick.major.direction': 'in',
-                  'ytick.minor.size': 3, 'ytick.minor.width': 0.8, 'ytick.minor.direction': 'in', 'ytick.minor.visible': True}
-    rc_use = rc if isinstance(rc, dict) else default_rc
-    for key, val in default_rc.items():
-        if key not in rc_use:
-            rc_use[key] = val
-
-    default_leg = {'fancybox': True, 'facecolor': 'white', 'framealpha': 1, 'loc': 'best'}
+    default_leg = {'fancybox': True, 'facecolor': 'white', 'framealpha': 1, 'loc': 'best', 'edgecolor': 'k'}
     leg_use = legend if isinstance(legend, dict) else default_leg
     for key, val in default_leg.items():
         if key not in leg_use:
             leg_use[key] = val
 
-    with matplotlib.rc_context(rc=rc_use):
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        if legend:
-            leg = ax.legend(**leg_use)
-            leg.get_frame().set_edgecolor('k')
-            return leg
+    ax.set_prop_cycle(_get_cycle(cmap))
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.tick_params(axis='both', which='both', direction='in')
+    ax.grid(visible=True)
+    if legend:
+        leg = ax.legend(**leg_use)
+        return leg
 
 
 def _get_cycle(cmap: str | matplotlib.colors.Colormap, num_colors: int = None):
