@@ -1,10 +1,12 @@
-"""Module for plotting utilities.
+""" # Plotting
+
+Module for plotting utilities.
 
 Includes
 --------
 - `ax_default` - Nice default plt formatting for x-y data
 - `plot_slice` - Plots a grid of 1d slices of a multivariate function
-- `ndscatter` - Plots a grid of 1d and 2d marginals in a "corner plot" for n-dimensional data
+- `ndscatter` - Plots a grid of 1d and 2d marginals in a "corner plot" for n-dimensional data (especially for MCMC)
 """
 from typing import Literal
 
@@ -41,7 +43,6 @@ def ax_default(ax: plt.Axes, xlabel='', ylabel='', legend=None, cmap='tab10'):
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.tick_params(axis='both', which='both', direction='in')
-    ax.grid(visible=True)
     if legend:
         leg = ax.legend(**leg_use)
         return leg

@@ -1,7 +1,11 @@
-"""Examples for using the package."""
+""" # Examples
+
+Examples for using the package.
+"""
 
 
 def normal_example():
+    """Sample and plot a normal pdf."""
     # --8<-- [start:normal]
     import numpy as np
     import uqtils as uq
@@ -22,6 +26,7 @@ def normal_example():
 
 
 def gradient_example():
+    """Evaluate 1d and multivariate gradients."""
     # --8<-- [start:gradient]
     import numpy as np
     import uqtils as uq
@@ -53,6 +58,7 @@ def gradient_example():
 
 
 def mcmc_example():
+    """Sample from a logpdf distribution using MCMC."""
     # --8<-- [start:mcmc]
     import numpy as np
     import uqtils as uq
@@ -63,7 +69,7 @@ def mcmc_example():
         cov = [[0.5, -0.1], [-0.1, 0.5]]
         return uq.normal_pdf(x, mu, cov, logpdf=True)
 
-    nsamples, nwalkers, ndim = 1000, 16, 2
+    nsamples, nwalkers, ndim = 1000, 4, 2
     x0 = np.random.randn(nwalkers, ndim)
     cov0 = np.eye(ndim)
 
@@ -71,6 +77,6 @@ def mcmc_example():
 
     burn_in = int(0.1 * nsamples)
     samples = samples[burn_in:, ...].reshape((-1, ndim))
-    fig, ax = uq.ndscatter(samples, plot='hist')
+    fig, ax = uq.ndscatter(samples, plot2d='hist')
     plt.show()
     # --8<-- [end:mcmc]

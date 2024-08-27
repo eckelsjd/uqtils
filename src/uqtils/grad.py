@@ -1,4 +1,6 @@
-"""Module for vectorized finite-difference gradient approximations.
+""" # Gradients
+
+Module for vectorized finite-difference gradient approximations.
 
 Includes
 --------

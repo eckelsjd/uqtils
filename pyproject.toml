@@ -1,23 +1,22 @@
 [project]
 name = "uqtils"
-dynamic = ["version"]
+version = "0.3.1"
 description = "Assorted utilities for uncertainty quantification and scientific computing."
 authors = [
     {name = "Joshua Eckels", email = "eckelsjd@umich.edu"},
 ]
 dependencies = [
-    "numpy>=1.26.3",
-    "matplotlib>=3.8.2",
-    "scipy>=1.12.0",
-    "tqdm>=4.66.1",
-    "h5py>=3.10.0",
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "matplotlib>=3.9",
+    "tqdm>=4.66",
+    "h5py>=3.10"
 ]
 requires-python = ">=3.11"
-readme = "docs/README.md"
-license = {file = "LICENSE"}
-keywords = ["Uncertainty quantification", "Bayesian"]
+readme = "README.md"
+license = {text = "GPL-3.0"}
+keywords = ["Uncertainty quantification", "Bayesian inference"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -29,42 +28,62 @@ classifiers = [
 Repository = "https://github.com/eckelsjd/uqtils.git"
 Documentation = "https://eckelsjd.github.io/uqtils/"
 
-
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
-[tool.pylint.MASTER]
-ignore-paths = [ "^.venv/.*$", "^docs/*" ]
+[tool.pdm]
+distribution = true
 
-[tool.pylint."MESSAGES CONTROL"]
-disable = '''
-missing-module-docstring,
-missing-class-docstring,
-missing-function-docstring
-'''
+[tool.pdm.install]
+cache = true
 
-[tool.pytest.ini_options]
-filterwarnings = [
-    "ignore::DeprecationWarning"
-]
+[tool.ruff.lint]
+select = ['E', 'F', 'I']
 
-[tool.pdm.version]
-source = "file"
-path = "src/uqtils/__init__.py"
+[tool.ruff]
+line-length = 120
+extend-exclude = ["*.ipynb"]
+
+[tool.commitizen]
+version_scheme = "pep440"
+version_provider = "pep621"
+version_files = ["src/uqtils.__init__.py:__version__"]
+update_changelog_on_bump = true
+tag_format = "v$version"
+changelog_file = "CHANGELOG.md"
+major_version_zero = true
+annotated_tag = true
+post_bump_hooks = ["git push --follow-tags"]
 
 [tool.pdm.scripts]
-post_init = "pdm install"
-test = "pytest --cov=uqtils tests"
+setup_dev = {composite = ["pdm sync -G dev", "pre-commit install --allow-missing-config"]}
+bump = "cz bump {args}"
+test = "pytest --cov=uqtils --cov-report html:htmlcov tests"
 docs = "mkdocs serve"
-release = "python release.py"
+lint = "ruff check src tests {args}"
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "pytest>=7.4.4",
-    "pytest-cov>=4.1.0",
-    "mkdocs>=1.5.3",
-    "mkdocs-material>=9.5.5",
-    "GitPython>=3.1.41",
-    "mkdocstrings[python]>=0.24.0",
+    "copier>=9.3",
+    "copier-templates-extensions>=0.3.0",
+    "ruff>=0.6",
+    "pre-commit>=3.8",
+    "commitizen>=3.29",
+]
+test = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+]
+doc = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+    "markdown-exec[ansi]>=1.9",
+    "mkdocs-gen-files>=0.5",
+    "mkdocs-literate-nav>=0.6",
+    "mkdocs-redirects>=1.2",
+    "mkdocs-git-committers-plugin-2>=2.3",
+    "mkdocs-git-revision-date-localized-plugin>=1.2",
+    "mkdocs-coverage>=1.0",
 ]

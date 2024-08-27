@@ -1,4 +1,6 @@
-"""Module for Sobol' sensitivity analysis.
+""" # Sobol'
+
+Module for Sobol' sensitivity analysis.
 
 Includes
 --------

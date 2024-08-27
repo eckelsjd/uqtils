@@ -1,4 +1,6 @@
-"""Module for Markov-Chain Monte Carlo routines.
+""" # MCMC
+
+Module for Markov-Chain Monte Carlo routines.
 
 Includes
 --------
@@ -173,6 +175,7 @@ def dram(logpdf, x0, niter, cov0=None, gamma=0.5, eps=1e-6, adapt_after=100, ada
 
     # Main sample loop
     iterable = tqdm.tqdm(range(niter-1)) if progress else range(niter-1)
+    # --8<-- [start:dram]
     for i in iterable:
         # Propose sample
         x1 = samples[i, ...]
@@ -227,6 +230,7 @@ def dram(logpdf, x0, niter, cov0=None, gamma=0.5, eps=1e-6, adapt_after=100, ada
                     curr_cov[:] = adapt_cov[:]
                 except np.linalg.LinAlgError as e:
                     warnings.warn(f"Non-PSD matrix at k={k}. Ignoring...")
+    # --8<-- [end:dram]
 
     try:
         if filename is not None:
