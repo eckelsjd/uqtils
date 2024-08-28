@@ -2,7 +2,7 @@ site_name: Uncertainty Quantification utilities
 site_url: https://eckelsjd.github.io/uqtils/
 site_author: Joshua Eckels
 repo_name: eckelsjd/uqtils
-repo_url: https://github.com/eckelsjd/uqtils.git
+repo_url: https://github.com/eckelsjd/uqtils
 copyright: Copyright &copy 2024 Joshua Eckels
 watch: [mkdocs.yml, README.md, CONTRIBUTING.md, CHANGELOG.md, src]
 
@@ -51,6 +51,8 @@ plugins:
             show_symbol_type_heading: true
             show_symbol_type_toc: true
             group_by_category: true
+            show_root_heading: true
+            heading_level: 1
   - coverage:
       html_report_dir: htmlcov
   - git-committers:
@@ -87,9 +89,7 @@ nav:
       - Contributing: contributing.md
       - Coverage report: coverage.md
       - Changelog: changelog.md
-  - API reference:
-      - uqtils: reference/index.md  # Must be named "index.md" for section title to be clickable
-      - reference/*         # Wildcard for auto-generated reference pages (gen-files + literate-nav)
+  - API reference: reference/
 
 exclude_docs: abbreviations.md
 

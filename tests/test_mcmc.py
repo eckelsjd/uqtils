@@ -1,7 +1,14 @@
 import numpy as np
 from scipy.stats import norm
 
-from uqtils.mcmc import *
+from uqtils.mcmc import (
+    autocorrelation,
+    dram,
+    is_positive_definite,
+    nearest_positive_definite,
+    normal_pdf,
+    normal_sample,
+)
 
 
 def test_sample():
@@ -31,7 +38,7 @@ def test_pdf():
 
 def test_mcmc():
     burnin = 0.1
-    niter, nwalk, ndim = 3000, 16, 2
+    niter, nwalk, ndim = 3000, 4, 2
     cov = np.random.rand(ndim, ndim)
     if not is_positive_definite(cov):
         cov = nearest_positive_definite(cov)
@@ -41,7 +48,7 @@ def test_mcmc():
     mu = np.random.rand(2)
     def fun(x):
         return normal_pdf(x, mu, cov, logpdf=True)
-    samples, logpdf, accepted = dram(fun, x0, cov, niter, progress=False)
+    samples, logpdf, accepted = dram(fun, x0, niter, cov0=cov, progress=False)
     samples = samples[int(burnin*niter):, ...]
     lags, autos, tau, ess = autocorrelation(samples)
     mean_pred = np.mean(samples, axis=(0, 1))

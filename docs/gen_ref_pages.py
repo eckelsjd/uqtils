@@ -4,54 +4,71 @@ import sys
 
 import mkdocs_gen_files
 
+LOCAL_TEST = False  # False if this is being run by mkdocs automatically
 nav = mkdocs_gen_files.Nav()
 import_name = "uqtils"
 nav_file = "SUMMARY.md"
+index_file_name = "index.md"
 root = Path(__file__).parent.parent
 src = root / "src" / import_name
+mod_symbol_nav = '<code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>'
+pack_symbol_nav = '<code class="doc-symbol doc-symbol-nav doc-symbol-package"></code>'
+pack_symbol_head = '<code class="doc-symbol doc-symbol-heading doc-symbol-package"></code>'
 
 if not src.exists():
     sys.exit(0)
 
 for path in sorted(src.rglob("*.py")):
-    module_path = path.relative_to(src).with_suffix("")
+    module_path = path.relative_to(src)
     doc_path = path.relative_to(src).with_suffix(".md")
-    full_doc_path = Path("reference", doc_path)
-    parts = tuple(module_path.parts)
+    module_parts = tuple(module_path.parts)
 
-    top_level_init = False  # Catch the top-level package's __init__ file and handle differently
-    if parts[-1] == "__init__":
-        parts = parts[:-1]
-        top_level_init = len(parts) == 0
-        new_name = "index.md"
-        doc_path = doc_path.with_name(new_name)
-        full_doc_path = full_doc_path.with_name(new_name)
-    elif parts[-1] == "__main__":
+    if module_parts[-1] in ['__main__.py', 'example.py', 'uq_types.py']:
         continue
 
-    if not top_level_init:
-        nav[parts] = doc_path.as_posix()
+    # Construct doc navigation path based on src directory layout
+    nav_parts = []     # For mkdocs literate-nav
+    python_parts = []  # Like scipy.stats.normal
+    for part in module_parts:
+        if part == "__init__.py":
+            doc_path = doc_path.with_name(index_file_name)
+            if len(module_parts) == 1:
+                nav_parts.append(f"{pack_symbol_nav} {import_name}")    # Top-level package
+        elif part.endswith('.py'):
+            python_parts.append(Path(part).stem)
+            nav_parts.append(f"{mod_symbol_nav} {Path(part).stem}")     # Modules
+        else:
+            python_parts.append(part)
+            nav_parts.append(f"{pack_symbol_nav} {part}")               # Subpackages
 
-    # For testing locally:
-    # full_doc_path.parent.mkdir(parents=True, exist_ok=True)
-    # with open(full_doc_path, 'w') as fd:
+    nav[tuple(nav_parts)] = doc_path.as_posix()
+    full_doc_path = Path('reference', doc_path)
+    python_name = ".".join(python_parts)
+    python_name = f'{import_name}{"." if python_name else ""}{python_name}'
 
-    # Creates virtual docs/reference/*.md files that are loaded by mkdocs
-    with mkdocs_gen_files.open(full_doc_path, "w") as fd:
-        ident = ".".join(parts)
+    # Create virtual docs/reference/*.md files that are loaded by mkdocs
+    if LOCAL_TEST:
+        full_doc_path.parent.mkdir(parents=True, exist_ok=True)
+        fd = open(full_doc_path, 'w')
+    else:
+        fd = mkdocs_gen_files.open(full_doc_path, "w")
 
-        # Change md header for subpackage __init__ files
-        if full_doc_path.name == 'index.md' and not top_level_init:
-            fd.write(f'# {import_name}.{ident}\n')
+    if doc_path.name == index_file_name:
+        # Change md header for packages
+        fd.write(f'# {pack_symbol_head} `{python_name}`\n')
+        fd.write(f'::: {python_name}\n')
+        fd.write(f'    options:\n')
+        fd.write(f'      show_root_heading: false\n')
+        fd.write(f'      show_root_toc_entry: false\n')
+        fd.write(f'      heading_level: 2\n')
+    else:
+        fd.write(f'---\ntitle: {python_parts[-1]}\n---\n\n::: {python_name}')
+    fd.close()
 
-        # Write mkdocstrings import mechanism at top of each reference file
-        fd.write(f"::: {import_name}.{ident}" if not top_level_init else f"::: {import_name}")
+    if not LOCAL_TEST:
+        mkdocs_gen_files.set_edit_path(full_doc_path, path.relative_to(root))
 
-    mkdocs_gen_files.set_edit_path(full_doc_path, path.relative_to(root))
-
-# For testing locally:
-# with open('reference/mkdocs-nav.md', 'w') as nav_file:
-
-# Here's where you would write the SUMMARY.md file for literate-nav
-# with mkdocs_gen_files.open(f"reference/{nav_file}", "w") as nav_file:
-#     nav_file.writelines(nav.build_literate_nav())
+# Write the SUMMARY.md file for literate-nav
+fd = open(f'reference/{nav_file}', 'w') if LOCAL_TEST else mkdocs_gen_files.open(f"reference/{nav_file}", "w")
+fd.writelines(nav.build_literate_nav())
+fd.close()

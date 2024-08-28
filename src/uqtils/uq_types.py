@@ -3,6 +3,8 @@ import numpy as np
 
 Array = list | float | np.ndarray
 
+__all__ = ['Array', 'format_input']
+
 
 def format_input(x: Array, ndim: int) -> tuple[bool, np.ndarray]:
     """Helper function to make sure input `x` is an `ndarray` of shape `(..., ndim)`.

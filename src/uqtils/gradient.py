@@ -1,9 +1,7 @@
-""" # Gradients
+"""Module for vectorized finite-difference gradient approximations.
 
-Module for vectorized finite-difference gradient approximations.
+Includes:
 
-Includes
---------
 - `approx_jac` - vectorized Jacobian approximation
 - `approx_hess` - vectorized Hessian approximation
 """

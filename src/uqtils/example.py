@@ -1,15 +1,12 @@
-""" # Examples
-
-Examples for using the package.
-"""
-
+"""Examples for using the package."""
+# ruff: noqa: F841
 
 def normal_example():
     """Sample and plot a normal pdf."""
     # --8<-- [start:normal]
     import numpy as np
+
     import uqtils as uq
-    import matplotlib.pyplot as plt
 
     ndim = 3
     shape = (5, ndim)
@@ -21,7 +18,6 @@ def normal_example():
     pdfs = uq.normal_pdf(samples, means, cov)             # (1000, 5)
 
     fig, ax = uq.ndscatter(samples[:, 0, :])
-    plt.show()
     # --8<-- [end:normal]
 
 
@@ -29,10 +25,10 @@ def gradient_example():
     """Evaluate 1d and multivariate gradients."""
     # --8<-- [start:gradient]
     import numpy as np
+
     import uqtils as uq
 
-    # 1d limiting case
-
+    # 1d example
     def f(x):
         return np.sin(x)
 
@@ -40,9 +36,7 @@ def gradient_example():
     df_dx = uq.approx_jac(f, x0)
     d2f_dx2 = uq.approx_hess(f, x0)
 
-
     # Multivariate example
-
     n_in, n_out = 3, 2
     def f(x):
         x0, x1, x2 = [x[..., i] for i in range(n_in)]
@@ -61,8 +55,8 @@ def mcmc_example():
     """Sample from a logpdf distribution using MCMC."""
     # --8<-- [start:mcmc]
     import numpy as np
+
     import uqtils as uq
-    import matplotlib.pyplot as plt
 
     def fun(x):
         mu = [1, 1]
@@ -73,10 +67,23 @@ def mcmc_example():
     x0 = np.random.randn(nwalkers, ndim)
     cov0 = np.eye(ndim)
 
-    samples, log_pdf, accepted = uq.dram(fun, x0, cov0, nsamples)
+    samples, log_pdf, accepted = uq.dram(fun, x0, nsamples, cov0=cov0)
 
     burn_in = int(0.1 * nsamples)
     samples = samples[burn_in:, ...].reshape((-1, ndim))
     fig, ax = uq.ndscatter(samples, plot2d='hist')
-    plt.show()
     # --8<-- [end:mcmc]
+
+def sobol_example():
+    """Do Sobol' analysis on the Ishigami test function."""
+    # --8<-- [start:sobol]
+    import numpy as np
+
+    from uqtils.sobol import ishigami, sobol_sa
+
+    model = lambda x: ishigami(x)['y']
+    sampler = lambda shape: np.random.rand(*shape, 3) * (2 * np.pi) - np.pi
+    n_samples = 1000
+
+    S1, ST = sobol_sa(model, sampler, n_samples)
+    # --8<-- [end:sobol]

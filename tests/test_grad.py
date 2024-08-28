@@ -1,6 +1,6 @@
 import numpy as np
 
-from uqtils.grad import approx_jac, approx_hess
+from uqtils.gradient import approx_hess, approx_jac
 
 
 def test_jacobian():

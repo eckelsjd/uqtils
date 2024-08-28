@@ -1,25 +1,23 @@
-""" # Plotting
+"""Module for plotting utilities.
 
-Module for plotting utilities.
+Includes:
 
-Includes
---------
 - `ax_default` - Nice default plt formatting for x-y data
 - `plot_slice` - Plots a grid of 1d slices of a multivariate function
 - `ndscatter` - Plots a grid of 1d and 2d marginals in a "corner plot" for n-dimensional data (especially for MCMC)
 """
 from typing import Literal
 
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
-import matplotlib.pyplot as plt
-import matplotlib
-from matplotlib.pyplot import cycler
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
-from matplotlib.ticker import StrMethodFormatter, AutoLocator, FuncFormatter
+from matplotlib.pyplot import cycler
+from matplotlib.ticker import AutoLocator, FuncFormatter, StrMethodFormatter
 
-from .uq_types import Array
 from .mcmc import normal_sample
+from .uq_types import Array
 
 __all__ = ['ax_default', 'plot_slice', 'ndscatter']
 
@@ -58,7 +56,7 @@ def _get_cycle(cmap: str | matplotlib.colors.Colormap, num_colors: int = None):
     if isinstance(cmap, str):
         use_index = cmap in ['Pastel1', 'Pastel2', 'Paired', 'Accent', 'Dark2', 'Set1', 'Set2', 'Set3',
                              'tab10', 'tab20', 'tab20b', 'tab20c']
-        cmap = matplotlib.cm.get_cmap(cmap)
+        cmap = plt.get_cmap(cmap)
     if num_colors is None:
         num_colors = cmap.N
     if cmap.N > 100:
@@ -186,10 +184,11 @@ def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str
     N, dim = samples.shape
     x_min = np.min(samples, axis=0)
     x_max = np.max(samples, axis=0)
+    show_colorbar = z is not None
     if labels is None:
         labels = [f"x{i}" for i in range(dim)]
     if z is None:
-        z = plt.get_cmap(cmap)(0)
+        z = plt.get_cmap(cmap)([0])
     if cb_label is None:
         cb_label = 'Performance metric'
 
@@ -280,7 +279,7 @@ def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str
                 elif plot2d == 'hex':
                     ax.hexbin(samples[:, j], samples[:, i], gridsize=bins, cmap=cmap, mincnt=cmin)
                 else:
-                    raise NotImplementedError('This plot type is not known. plot=["hist", "kde", "scatter"]')
+                    raise NotImplementedError('This plot type is not known. plot2d=["hist", "kde", "scatter"]')
 
                 if cov_overlay is not None:
                     kernel = st.gaussian_kde(x_overlay[:, [j, i]].T)
@@ -294,7 +293,7 @@ def ndscatter(samples: np.ndarray, labels: list[str] = None, tick_fmts: list[str
     fig.tight_layout()
 
     # Plot colorbar in standalone figure
-    if np.max(z) > 0 and plot2d == 'scatter':
+    if show_colorbar and plot2d == 'scatter':
         cb_fig, cb_ax = plt.subplots(figsize=(1.5, 6))
         cb_fig.subplots_adjust(right=0.7)
         cb_fig.colorbar(sc, cax=cb_ax, orientation='vertical', label=cb_label)

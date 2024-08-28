@@ -1,13 +1,11 @@
-""" # Sobol'
+"""Module for Sobol' sensitivity analysis.
 
-Module for Sobol' sensitivity analysis.
+Includes:
 
-Includes
---------
 - `sobol_sa` - function for global sensitivity analysis
 """
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import scipy.stats as st
 
 from uqtils import ax_default
@@ -116,7 +114,8 @@ def sobol_sa(model, sampler, num_samples: int, qoi_idx: list[int] = None, qoi_la
         print(f'\n{"QoI":>10} {"S1 total":>10} {"S2 total":>10} {"Higher order":>15}')
         for i in range(len(qoi_idx)):
             q = qoi_idx[i]
-            print(f'{qoi_labels[i]:>10} {S1_total[q]: 10.3f} {S2_total[q]: 10.3f} {1 - S1_total[q] - S2_total[q]: 15.3f}')
+            print(f'{qoi_labels[i]:>10} {S1_total[q]: 10.3f} {S2_total[q]: 10.3f} '
+                  f'{1 - S1_total[q] - S2_total[q]: 15.3f}')
 
     if plot:
         # Plot bar chart of S1, ST
@@ -138,7 +137,7 @@ def sobol_sa(model, sampler, num_samples: int, qoi_idx: list[int] = None, qoi_la
             ax.set_title(qoi_labels[i])
         fig.set_size_inches(4*len(qoi_idx), 4)
         fig.tight_layout()
-        plt.show()
+        bar_chart = (fig, axs)
 
         # Plot pie chart of S1, S2, higher-order
         fig, axs = plt.subplots(1, len(qoi_idx))
@@ -179,7 +178,8 @@ def sobol_sa(model, sampler, num_samples: int, qoi_idx: list[int] = None, qoi_la
 
             # Generate pie chart
             colors = c(np.linspace(0, 1, len(values)-2))
-            gray_idx = [idx for idx, label in enumerate(labels) if label.startswith('Higher') or label.startswith('Other')]
+            gray_idx = [idx for idx, label in enumerate(labels) if label.startswith('Higher') or
+                        label.startswith('Other')]
             pie_colors = np.empty((len(values), 4))
             c_idx = 0
             for idx in range(len(values)):
@@ -217,26 +217,17 @@ def sobol_sa(model, sampler, num_samples: int, qoi_idx: list[int] = None, qoi_la
         fig.set_size_inches(3*radius*len(qoi_idx), 2.5*radius)
         fig.tight_layout()
         fig.subplots_adjust(left=0.15, right=0.75)
-        plt.show()
+        pie_chart = (fig, axs)
 
     if compute_s2:
         ret = (S1, S2, ST)
     else:
         ret = (S1, ST)
+    if plot:
+        ret = ret + (bar_chart, pie_chart)
     return ret
 
 
 def ishigami(x, a=7.0, b=0.1):
     """For testing Sobol indices: https://doi.org/10.1109/ISUMA.1990.151285"""
     return {'y': np.sin(x[..., 0:1]) + a*np.sin(x[..., 1:2])**2 + b*(x[..., 2:3]**4)*np.sin(x[..., 0:1])}
-
-
-if __name__ == '__main__':
-    model = lambda x: ishigami(x)['y']
-    def lhc_sampler(shape):
-        N, dim = np.prod(shape), 3
-        x = st.qmc.LatinHypercube(d=dim).random(n=N)
-        x = st.qmc.scale(x, [-np.pi]*dim, [np.pi]*dim).reshape(shape + (dim,))
-        return x
-    rand_sampler = lambda shape: np.random.rand(*shape, 3)*(2*np.pi) - np.pi
-    sobol_sa(model, lhc_sampler, 10000, cmap='summer', plot=True)

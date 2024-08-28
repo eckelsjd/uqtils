@@ -6,11 +6,11 @@
 ![build](https://img.shields.io/github/actions/workflow/status/eckelsjd/uqtils/deploy.yml?logo=github)
 ![docs](https://img.shields.io/github/actions/workflow/status/eckelsjd/uqtils/docs.yml?logo=materialformkdocs&logoColor=%2523cccccc&label=docs)
 ![tests](https://img.shields.io/github/actions/workflow/status/eckelsjd/uqtils/tests.yml?logo=github&logoColor=%2523cccccc&label=tests)
-![Code Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen?logo=codecov)
+![Code Coverage](https://img.shields.io/badge/coverage-87%25-yellowgreen?logo=codecov)
 
 Assorted utilities for uncertainty quantification and scientific computing.
 
-## :gear: Installation
+## ⚙️ Installation
 ```shell
 pip install uqtils
 ```
@@ -22,7 +22,7 @@ pdm add uqtils
 pdm add -e ./uqtils --dev
 ```
 
-## :round_pushpin: Quickstart
+## 📍 Quickstart
 ```python
 import numpy as np
 import uqtils as uq
@@ -36,7 +36,7 @@ samples = uq.normal_sample(mu, cov, nsamples)
 fig, ax = uq.ndscatter(samples)
 ```
 
-## :arrow_up: Contributing
+## 🏗️ Contributing
 See the [contribution](https://github.com/eckelsjd/uqtils/blob/main/CONTRIBUTING.md) guidelines.
 
 <sup><sub>Made with the [copier-numpy](https://github.com/eckelsjd/copier-numpy.git) template.</sub></sup>

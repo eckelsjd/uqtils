@@ -1,9 +1,7 @@
-""" # MCMC
+"""Module for Markov-Chain Monte Carlo routines.
 
-Module for Markov-Chain Monte Carlo routines.
+Includes:
 
-Includes
---------
 - `normal_pdf` - vectorized Gaussian pdf evaluation
 - `normal_sample` - vectorized Gaussian sampling
 - `is_positive_definite` - whether a matrix is positive semi-definite
@@ -13,9 +11,9 @@ Includes
 """
 import warnings
 
+import h5py
 import numpy as np
 import tqdm
-import h5py
 
 from .uq_types import Array
 
@@ -109,11 +107,11 @@ def nearest_positive_definite(A):
     # `spacing` will, for Gaussian random matrixes of small dimension, be on
     # othe order of 1e-16. In practice, both ways converge, as the unit test
     # below suggests.
-    I = np.eye(A.shape[0])
+    eye = np.eye(A.shape[0])
     k = 1
     while not is_positive_definite(A3):
         mineig = np.min(np.real(np.linalg.eigvals(A3)))
-        A3 += I * (-mineig * k ** 2 + spacing)
+        A3 += eye * (-mineig * k ** 2 + spacing)
         k += 1
 
     return A3
@@ -197,12 +195,13 @@ def dram(logpdf, x0, niter, cov0=None, gamma=0.5, eps=1e-6, adapt_after=100, ada
         if delayed and np.any(~a1_idx):
             y2 = normal_sample(x1[~a1_idx, :], curr_chol[~a1_idx, ...] * np.sqrt(gamma), sqrt=True)
             y2_log = logpdf(y2)
-            with (np.errstate(divide='ignore', invalid='ignore')):
+            with ((np.errstate(divide='ignore', invalid='ignore'))):
                 # If a(y2, y1)=1, then log(1-a(y2,y1)) -> -infty and a2 -> 0
                 frac_1 = y2_log - x1_log[~a1_idx]
                 frac_2 = (normal_pdf(y1[~a1_idx, :], y2, curr_cov[~a1_idx, ...], logpdf=True) -
                           normal_pdf(y1[~a1_idx, :], x1[~a1_idx, :], curr_cov[~a1_idx, ...], logpdf=True))
-                frac_3 = np.log(1 - accept_first(y2_log, y1_log[~a1_idx])) - np.log(1 - np.minimum(1.0, np.exp(a1[~a1_idx])))
+                frac_3 = (np.log(1 - accept_first(y2_log, y1_log[~a1_idx])) -
+                          np.log(1 - np.minimum(1.0, np.exp(a1[~a1_idx]))))
                 a2 = frac_1 + frac_2 + frac_3
             a2_idx = a2 > 0
             a2_idx |= np.log(np.random.rand(a2.shape[0])) < a2
@@ -228,7 +227,7 @@ def dram(logpdf, x0, niter, cov0=None, gamma=0.5, eps=1e-6, adapt_after=100, ada
                 try:
                     curr_chol[:] = np.linalg.cholesky(adapt_cov)
                     curr_cov[:] = adapt_cov[:]
-                except np.linalg.LinAlgError as e:
+                except np.linalg.LinAlgError:
                     warnings.warn(f"Non-PSD matrix at k={k}. Ignoring...")
     # --8<-- [end:dram]
 

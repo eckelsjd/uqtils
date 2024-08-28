@@ -11,7 +11,7 @@ def test_plotting():
     yt = samples[:, 0] + samples[:, 1] ** 2
     ysurr = yt + np.random.randn(*yt.shape)
     err = np.abs(ysurr - yt) / np.abs(yt)
-    ndscatter(samples, labels=[r'$\alpha$', r'$\beta$', r'$\gamma$'], plot='scatter', cmap='plasma',
+    ndscatter(samples, labels=[r'$\alpha$', r'$\beta$', r'$\gamma$'], plot2d='scatter', cmap='plasma',
               cb_norm='log', z=err)
 
     funs = [lambda x: np.cos(x[..., 0]) + x[..., 1], lambda x: np.sin(x[..., 0]) + x[..., 1]]

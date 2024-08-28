@@ -20,7 +20,7 @@ SUCCESS = 0
 def run_git_command(command):
     """Run a git command and return its console output."""
     try:
-        result = subprocess.run(command, capture_output=True, check=True, text=True)
+        result = subprocess.run(command, capture_output=True, check=True, text=True, shell=True)
         return result
     except subprocess.CalledProcessError as e:
         sys.exit(f'Error running {command}: {e.stderr}')
