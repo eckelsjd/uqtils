@@ -1,43 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://eckelsjd.github.io/uqtils/</loc>
-         <lastmod>2024-05-14</lastmod>
+         <loc>https://eckelsjd.github.io/uqtils/changelog/</loc>
+         <lastmod>2024-08-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://eckelsjd.github.io/uqtils/CONTRIBUTING/</loc>
-         <lastmod>2024-05-14</lastmod>
+         <loc>https://eckelsjd.github.io/uqtils/contributing/</loc>
+         <lastmod>2024-08-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://eckelsjd.github.io/uqtils/coverage/</loc>
+         <lastmod>2024-08-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://eckelsjd.github.io/uqtils/how-to-guides/</loc>
-         <lastmod>2024-05-14</lastmod>
+         <lastmod>2024-08-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://eckelsjd.github.io/uqtils/start/</loc>
+         <lastmod>2024-08-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://eckelsjd.github.io/uqtils/tutorials/</loc>
-         <lastmod>2024-05-14</lastmod>
+         <lastmod>2024-08-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://eckelsjd.github.io/uqtils/reference/grad/</loc>
-         <lastmod>2024-05-14</lastmod>
+         <loc>https://eckelsjd.github.io/uqtils/reference/</loc>
+         <lastmod>2024-08-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://eckelsjd.github.io/uqtils/reference/SUMMARY/</loc>
+         <lastmod>2024-08-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://eckelsjd.github.io/uqtils/reference/gradient/</loc>
+         <lastmod>2024-08-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://eckelsjd.github.io/uqtils/reference/mcmc/</loc>
-         <lastmod>2024-05-14</lastmod>
+         <lastmod>2024-08-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://eckelsjd.github.io/uqtils/reference/plots/</loc>
-         <lastmod>2024-05-14</lastmod>
+         <lastmod>2024-08-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://eckelsjd.github.io/uqtils/reference/sobol/</loc>
-         <lastmod>2024-05-14</lastmod>
+         <lastmod>2024-08-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
