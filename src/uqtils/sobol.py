@@ -10,7 +10,7 @@ import scipy.stats as st
 
 from uqtils import ax_default
 
-__all__ = ['sobol_sa']
+__all__ = ['sobol_sa', 'ishigami']
 
 
 def sobol_sa(model, sampler, num_samples: int, qoi_idx: list[int] = None, qoi_labels: list[str] = None,
@@ -229,5 +229,5 @@ def sobol_sa(model, sampler, num_samples: int, qoi_idx: list[int] = None, qoi_la
 
 
 def ishigami(x, a=7.0, b=0.1):
-    """For testing Sobol indices: https://doi.org/10.1109/ISUMA.1990.151285"""
+    """For testing Sobol indices: [Ishigami function](https://doi.org/10.1109/ISUMA.1990.151285)"""
     return {'y': np.sin(x[..., 0:1]) + a*np.sin(x[..., 1:2])**2 + b*(x[..., 2:3]**4)*np.sin(x[..., 0:1])}

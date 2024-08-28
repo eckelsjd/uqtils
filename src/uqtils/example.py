@@ -1,11 +1,11 @@
 """Examples for using the package."""
 # ruff: noqa: F841
+# ruff: noqa: I001
 
 def normal_example():
     """Sample and plot a normal pdf."""
     # --8<-- [start:normal]
     import numpy as np
-
     import uqtils as uq
 
     ndim = 3
@@ -25,7 +25,6 @@ def gradient_example():
     """Evaluate 1d and multivariate gradients."""
     # --8<-- [start:gradient]
     import numpy as np
-
     import uqtils as uq
 
     # 1d example
@@ -55,7 +54,6 @@ def mcmc_example():
     """Sample from a logpdf distribution using MCMC."""
     # --8<-- [start:mcmc]
     import numpy as np
-
     import uqtils as uq
 
     def fun(x):
@@ -78,12 +76,11 @@ def sobol_example():
     """Do Sobol' analysis on the Ishigami test function."""
     # --8<-- [start:sobol]
     import numpy as np
+    import uqtils as uq
 
-    from uqtils.sobol import ishigami, sobol_sa
-
-    model = lambda x: ishigami(x)['y']
+    model = lambda x: uq.ishigami(x)['y']
     sampler = lambda shape: np.random.rand(*shape, 3) * (2 * np.pi) - np.pi
     n_samples = 1000
 
-    S1, ST = sobol_sa(model, sampler, n_samples)
+    S1, ST = uq.sobol_sa(model, sampler, n_samples)
     # --8<-- [end:sobol]
