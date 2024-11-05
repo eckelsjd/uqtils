@@ -8,9 +8,9 @@ authors = [
 dependencies = [
     "numpy>=2.0",
     "scipy>=1.14",
-    "matplotlib>=3.9",
     "tqdm>=4.66",
-    "h5py>=3.10"
+    "h5py>=3.10",
+    "matplotlib>=3.9.2",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
