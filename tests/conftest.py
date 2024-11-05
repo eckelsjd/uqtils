@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 from urllib.parse import quote
 
+import coverage
 from coverage import Coverage
 
 PROJECT_DIR = Path(__file__).parent.parent
@@ -14,9 +15,13 @@ COVERAGE_FILE = PROJECT_DIR / '.coverage'
 def update_readme_coverage_badge():
     """Update the test coverage (codecov) badge in the README with most recent pytest-cov results."""
     # Get total coverage percentage from .coverage file
-    cov = Coverage(data_file=COVERAGE_FILE)
-    cov.load()
-    total = round(cov.report())
+    try:
+        cov = Coverage(data_file=COVERAGE_FILE)
+        cov.load()
+        total = round(cov.report())
+    except coverage.exceptions.NoDataError:
+        print('No coverage data found. Skipping README update...')
+        return
 
     # Get badge color
     color_bds = [(95, "brightgreen"), (90, "green"), (75, "yellowgreen"), (60, "yellow"), (40, "orange"), (0, "red")]
@@ -38,7 +43,7 @@ def update_readme_coverage_badge():
     replacement_str = f"![Code Coverage]({badge_url})"
 
     # Use regex to replace badge icon in README
-    with open(README_FILE, "r+") as f:
+    with open(README_FILE, "r+", encoding='utf-8') as f:
         text = f.read()
         if replacement_str in text:
             logging.info('Coverage in README is up to date -- no changes made.')
