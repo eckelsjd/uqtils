@@ -1,6 +1,6 @@
 [project]
 name = "uqtils"
-version = "0.4.0"
+version = "0.4.1"
 description = "Assorted utilities for uncertainty quantification and scientific computing."
 authors = [
     {name = "Joshua Eckels", email = "eckelsjd@umich.edu"},

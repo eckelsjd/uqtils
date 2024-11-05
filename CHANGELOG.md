@@ -1,3 +1,9 @@
+## v0.4.1 (2024-11-04)
+
+### Fix
+
+- fixes version and gh deploy action (#1)
+
 ## v0.4.0 (2024-08-28)
 
 ### BREAKING CHANGE
