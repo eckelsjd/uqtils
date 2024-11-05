@@ -16,5 +16,5 @@ from .plots import *  # noqa: F403
 from .sobol import *  # noqa: F403
 from .uq_types import *  # noqa: F403
 
-__version__ = "0.3.1"
+__version__ = "0.4.2"
 __all__ = gradient.__all__ + mcmc.__all__ + plots.__all__ + sobol.__all__ + uq_types.__all__  # noqa: F405
