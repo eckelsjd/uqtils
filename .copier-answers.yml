@@ -4,7 +4,7 @@ _src_path: gh:eckelsjd/copier-numpy
 author_email: eckelsjd@umich.edu
 author_name: Joshua Eckels
 copyright_license: GPL-3.0
-distribution_name: uqtils
+distribution_name: uqtils_temp
 import_name: uqtils
 include_cicd: true
 include_docs: true
