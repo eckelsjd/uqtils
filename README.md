@@ -7,7 +7,7 @@
 ![build](https://img.shields.io/github/actions/workflow/status/eckelsjd/uqtils/deploy.yml?logo=github)
 ![docs](https://img.shields.io/github/actions/workflow/status/eckelsjd/uqtils/docs.yml?logo=materialformkdocs&logoColor=%2523cccccc&label=docs)
 ![tests](https://img.shields.io/github/actions/workflow/status/eckelsjd/uqtils/tests.yml?logo=github&logoColor=%2523cccccc&label=tests)
-![Code Coverage](https://img.shields.io/badge/coverage-88%25-yellowgreen?logo=codecov)
+![Code Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?logo=codecov)
 
 Assorted utilities for uncertainty quantification and scientific computing.
 

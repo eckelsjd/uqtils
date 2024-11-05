@@ -49,7 +49,7 @@ extend-exclude = ["*.ipynb"]
 [tool.commitizen]
 version_scheme = "pep440"
 version_provider = "pep621"
-version_files = ["src/uqtils.__init__.py:__version__"]
+version_files = ["src/uqtils/__init__.py:__version__"]
 update_changelog_on_bump = true
 tag_format = "v$version"
 changelog_file = "CHANGELOG.md"
