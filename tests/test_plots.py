@@ -1,3 +1,6 @@
+import matplotlib
+
+matplotlib.use('Agg')
 import numpy as np
 
 from uqtils.plots import ndscatter, plot_slice

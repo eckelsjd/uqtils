@@ -37,6 +37,7 @@ def test_pdf():
 
 
 def test_mcmc():
+    np.random.seed(42)
     burnin = 0.1
     niter, nwalk, ndim = 3000, 4, 2
     cov = np.random.rand(ndim, ndim)

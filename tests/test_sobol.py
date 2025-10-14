@@ -5,6 +5,7 @@ from uqtils.sobol import ishigami, sobol_sa
 
 
 def test_sobol_sa():
+    np.random.seed(42)
     model = lambda x: ishigami(x)['y']
     n_samples = 2000
 
