@@ -6,7 +6,7 @@ authors = [
     {name = "Joshua Eckels", email = "eckelsjd@umich.edu"},
 ]
 dependencies = [
-    "numpy>=2.0",
+    "numpy>=2.1",
     "scipy>=1.14",
     "tqdm>=4.66",
     "h5py>=3.10",
